@@ -1,3 +1,9 @@
+---
+services:
+platforms:
+author: azure
+---
+
 # A Simple Todo List Application built w/ Java + Azure DocumentDB
 
 The sample code in this Github repository demonstrates how to create a simple application using Java and Azure DocumentDB.
