@@ -1,7 +1,7 @@
 ---
-services:
-platforms:
-author: azure
+services: documentdb
+platforms: java
+author: aliuy
 ---
 
 # A Simple Todo List Application built w/ Java + Azure DocumentDB
