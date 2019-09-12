@@ -1,7 +1,12 @@
 ---
-services: documentdb
-platforms: java
-author: aliuy
+page_type: sample
+languages:
+- java
+- javascript
+products:
+- azure
+description: "The sample code in this Github repository demonstrates how to create a simple application using Java and Azure DocumentDB."
+urlFragment: documentdb-java-todo-app
 ---
 
 # A Simple Todo List Application built w/ Java + Azure DocumentDB
