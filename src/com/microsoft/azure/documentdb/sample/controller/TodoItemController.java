@@ -1,6 +1,7 @@
 package com.microsoft.azure.documentdb.sample.controller;
 
 import java.util.List;
+import java.util.UUID;
 
 import lombok.NonNull;
 
@@ -26,8 +27,13 @@ public class TodoItemController {
 
     public TodoItem createTodoItem(@NonNull String name,
             @NonNull String category, boolean isComplete) {
-        TodoItem todoItem = TodoItem.builder().name(name).category(category)
-                .complete(isComplete).build();
+        TodoItem todoItem = new TodoItem();
+        
+        todoItem.setName(name);
+        todoItem.setCategory(category);
+        todoItem.setComplete(isComplete);
+        todoItem.setId(UUID.randomUUID().toString());
+
         return todoDao.createTodoItem(todoItem);
     }
 
