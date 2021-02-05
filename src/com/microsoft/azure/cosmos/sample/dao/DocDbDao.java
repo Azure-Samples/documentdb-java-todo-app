@@ -1,4 +1,4 @@
-package com.microsoft.azure.documentdb.sample.dao;
+package com.microsoft.azure.cosmos.sample.dao;
 
 import com.azure.cosmos.CosmosClient;
 import com.azure.cosmos.CosmosContainer;
@@ -17,7 +17,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.gson.Gson;
-import com.microsoft.azure.documentdb.sample.model.TodoItem;
+import com.microsoft.azure.cosmos.sample.model.TodoItem;
 
 import java.util.ArrayList;
 import java.util.List;

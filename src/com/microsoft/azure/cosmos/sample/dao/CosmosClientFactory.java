@@ -1,12 +1,12 @@
-package com.microsoft.azure.documentdb.sample.dao;
+package com.microsoft.azure.cosmos.sample.dao;
 
 import com.azure.cosmos.ConsistencyLevel;
 import com.azure.cosmos.CosmosClient;
 import com.azure.cosmos.CosmosClientBuilder;
 
 public class CosmosClientFactory {
-    private static final String HOST = "https://docdb-java-sample.documents.azure.com:443/";
-    private static final String MASTER_KEY = "[YOUR_KEY_HERE]";
+    private static final String HOST = "[ACCOUNT HOST NAME]";
+    private static final String MASTER_KEY = "[ACCOUNT KEY]";
 
     private static CosmosClient cosmosClient = new CosmosClientBuilder()
             .endpoint(HOST)

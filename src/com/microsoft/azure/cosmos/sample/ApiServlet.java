@@ -1,4 +1,4 @@
-package com.microsoft.azure.documentdb.sample;
+package com.microsoft.azure.cosmos.sample;
 
 import java.io.IOException;
 
@@ -9,7 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.google.gson.Gson;
-import com.microsoft.azure.documentdb.sample.controller.TodoItemController;
+import com.microsoft.azure.cosmos.sample.controller.TodoItemController;
 
 /**
  * API Frontend Servlet
