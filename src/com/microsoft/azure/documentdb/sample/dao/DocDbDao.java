@@ -1,27 +1,26 @@
 package com.microsoft.azure.documentdb.sample.dao;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import com.google.gson.Gson;
-import com.azure.cosmos.ConnectionPolicy;
-import com.azure.cosmos.ConsistencyLevel;
 import com.azure.cosmos.CosmosClient;
-import com.azure.cosmos.CosmosClientBuilder;
-import com.azure.cosmos.CosmosClientException;
 import com.azure.cosmos.CosmosContainer;
 import com.azure.cosmos.CosmosDatabase;
+import com.azure.cosmos.CosmosException;
 import com.azure.cosmos.implementation.Utils;
 import com.azure.cosmos.models.CosmosContainerProperties;
+import com.azure.cosmos.models.CosmosContainerResponse;
+import com.azure.cosmos.models.CosmosDatabaseResponse;
 import com.azure.cosmos.models.CosmosItemRequestOptions;
-import com.azure.cosmos.models.FeedOptions;
+import com.azure.cosmos.models.CosmosQueryRequestOptions;
 import com.azure.cosmos.models.FeedResponse;
 import com.azure.cosmos.models.PartitionKey;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.gson.Gson;
 import com.microsoft.azure.documentdb.sample.model.TodoItem;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class DocDbDao implements TodoDao {
     // The name of our database.
@@ -35,49 +34,49 @@ public class DocDbDao implements TodoDao {
 
     // The Cosmos DB Client
     private static CosmosClient cosmosClient = CosmosClientFactory
-            .getCosmosClient();
-    
+        .getCosmosClient();
+
     // The Cosmos DB database
     private static CosmosDatabase cosmosDatabase = null;
-    
+
     // The Cosmos DB container
     private static CosmosContainer cosmosContainer = null;
 
     // For POJO/JsonNode interconversion
     private static final ObjectMapper OBJECT_MAPPER = Utils.getSimpleObjectMapper();
-    
+
     @Override
     public TodoItem createTodoItem(TodoItem todoItem) {
         // Serialize the TodoItem as a JSON Document.
-    	
-    	JsonNode todoItemJson = OBJECT_MAPPER.valueToTree(todoItem);
-    	
-    	((ObjectNode)todoItemJson).put("entityType", "todoItem"); 	
-    	
+
+        JsonNode todoItemJson = OBJECT_MAPPER.valueToTree(todoItem);
+
+        ((ObjectNode) todoItemJson).put("entityType", "todoItem");
+
         try {
             // Persist the document using the DocumentClient.
-            todoItemJson = 
-            		getContainerCreateResourcesIfNotExist()
-            		.createItem(todoItemJson)
-            		.getResource();
-        } catch (CosmosClientException e) {
-        	System.out.println("Error creating TODO item.\n");
+            todoItemJson =
+                getContainerCreateResourcesIfNotExist()
+                    .createItem(todoItemJson)
+                    .getItem();
+        } catch (CosmosException e) {
+            System.out.println("Error creating TODO item.\n");
             e.printStackTrace();
             return null;
         }
 
-        
+
         try {
-        
-        	return OBJECT_MAPPER.treeToValue(todoItemJson, TodoItem.class);
-        	//return todoItem;
+
+            return OBJECT_MAPPER.treeToValue(todoItemJson, TodoItem.class);
+            //return todoItem;
         } catch (Exception e) {
-    		System.out.println("Error deserializing created TODO item.\n");
-    		e.printStackTrace();
-    		
-    		return null;
+            System.out.println("Error deserializing created TODO item.\n");
+            e.printStackTrace();
+
+            return null;
         }
-       
+
     }
 
     @Override
@@ -87,14 +86,14 @@ public class DocDbDao implements TodoDao {
 
         if (todoItemJson != null) {
             // De-serialize the document in to a TodoItem.
-        	try {
-        	return OBJECT_MAPPER.treeToValue(todoItemJson, TodoItem.class);
-        	} catch (JsonProcessingException e) {
-        		System.out.println("Error deserializing read TODO item.\n");
-        		e.printStackTrace();
-        		
-        		return null;        		
-        	}
+            try {
+                return OBJECT_MAPPER.treeToValue(todoItemJson, TodoItem.class);
+            } catch (JsonProcessingException e) {
+                System.out.println("Error deserializing read TODO item.\n");
+                e.printStackTrace();
+
+                return null;
+            }
         } else {
             return null;
         }
@@ -103,54 +102,53 @@ public class DocDbDao implements TodoDao {
     @Override
     public List<TodoItem> readTodoItems() {
 
-    	List<TodoItem> todoItems = new ArrayList<TodoItem>();    	
-    	
-        String sql = "SELECT * FROM root r WHERE r.entityType = 'todoItem'";                    
+        List<TodoItem> todoItems = new ArrayList<TodoItem>();
+
+        String sql = "SELECT * FROM root r WHERE r.entityType = 'todoItem'";
         int maxItemCount = 1000;
         int maxDegreeOfParallelism = 1000;
         int maxBufferedItemCount = 100;
 
-        FeedOptions options = new FeedOptions();
-        options.setMaxItemCount(maxItemCount);
+        CosmosQueryRequestOptions options = new CosmosQueryRequestOptions();
         options.setMaxBufferedItemCount(maxBufferedItemCount);
         options.setMaxDegreeOfParallelism(maxDegreeOfParallelism);
-        options.setRequestContinuation(null);
-        options.setPopulateQueryMetrics(false);
-        
+        options.setQueryMetricsEnabled(false);
+
         int error_count = 0;
         int error_limit = 10;
-        
+
+        String continuationToken = null;
         do {
-        
-        	for (FeedResponse<JsonNode> pageResponse: 
-        		getContainerCreateResourcesIfNotExist()
-        			.queryItems(sql, options, JsonNode.class)
-        			.iterableByPage()) {
 
-        		options.setRequestContinuation(pageResponse.getContinuationToken());
+            for (FeedResponse<JsonNode> pageResponse :
+                getContainerCreateResourcesIfNotExist()
+                    .queryItems(sql, options, JsonNode.class)
+                    .iterableByPage(continuationToken, maxItemCount)) {
 
-        		for (JsonNode item : pageResponse.getElements()) {
-        			
-        			try {
-        				todoItems.add(OBJECT_MAPPER.treeToValue(item, TodoItem.class));
-        			} catch (JsonProcessingException e) {
-        				if (error_count < error_limit) {
-        					error_count++;
-        					if (error_count >= error_limit) {
-        						System.out.println("\n...reached max error count.\n");
-        					} else {
-        						System.out.println("Error deserializing TODO item JsonNode. " + 
-        								"This item will not be returned.");
-        						e.printStackTrace();
-        					}
-        				}
-        			}
-        			
-        		}
-        	}
-        
-        } while(options.getRequestContinuation() != null);        
-        
+                continuationToken = pageResponse.getContinuationToken();
+
+                for (JsonNode item : pageResponse.getElements()) {
+
+                    try {
+                        todoItems.add(OBJECT_MAPPER.treeToValue(item, TodoItem.class));
+                    } catch (JsonProcessingException e) {
+                        if (error_count < error_limit) {
+                            error_count++;
+                            if (error_count >= error_limit) {
+                                System.out.println("\n...reached max error count.\n");
+                            } else {
+                                System.out.println("Error deserializing TODO item JsonNode. " +
+                                    "This item will not be returned.");
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+
+                }
+            }
+
+        } while (continuationToken != null);
+
         return todoItems;
     }
 
@@ -163,29 +161,29 @@ public class DocDbDao implements TodoDao {
         // For more complex operations - you could de-serialize the document in
         // to a POJO, update the POJO, and then re-serialize the POJO back in to
         // a document.
-        ((ObjectNode)todoItemJson).put("complete", isComplete);
+        ((ObjectNode) todoItemJson).put("complete", isComplete);
 
         try {
             // Persist/replace the updated document.
-            todoItemJson = 
-            		getContainerCreateResourcesIfNotExist()
-            		.replaceItem(todoItemJson, id, new PartitionKey(id), new CosmosItemRequestOptions())
-            		.getResource();
-        } catch (CosmosClientException e) {
-        	System.out.println("Error updating TODO item.\n");
+            todoItemJson =
+                getContainerCreateResourcesIfNotExist()
+                    .replaceItem(todoItemJson, id, new PartitionKey(id), new CosmosItemRequestOptions())
+                    .getItem();
+        } catch (CosmosException e) {
+            System.out.println("Error updating TODO item.\n");
             e.printStackTrace();
             return null;
         }
 
         // De-serialize the document in to a TodoItem.
-    	try {
-    		return OBJECT_MAPPER.treeToValue(todoItemJson, TodoItem.class);
-    	} catch (JsonProcessingException e) {
-    		System.out.println("Error deserializing updated item.\n");
-    		e.printStackTrace();
-    		
-    		return null;        		
-    	}        
+        try {
+            return OBJECT_MAPPER.treeToValue(todoItemJson, TodoItem.class);
+        } catch (JsonProcessingException e) {
+            System.out.println("Error deserializing updated item.\n");
+            e.printStackTrace();
+
+            return null;
+        }
     }
 
     @Override
@@ -197,10 +195,10 @@ public class DocDbDao implements TodoDao {
 
         try {
             // Delete the document by self link.
-        	getContainerCreateResourcesIfNotExist()
-        		.deleteItem(id, new PartitionKey(id), new CosmosItemRequestOptions());
-        } catch (CosmosClientException e) {
-        	System.out.println("Error deleting TODO item.\n");
+            getContainerCreateResourcesIfNotExist()
+                .deleteItem(id, new PartitionKey(id), new CosmosItemRequestOptions());
+        } catch (CosmosException e) {
+            System.out.println("Error deleting TODO item.\n");
             e.printStackTrace();
             return false;
         }
@@ -230,7 +228,7 @@ public class DocDbDao implements TodoDao {
 
                     databaseCache = cosmosClient.createDatabase(
                             databaseDefinition, null).getResource();
-                } catch (CosmosClientException e) {
+                } catch (CosmosException e) {
                     // TODO: Something has gone terribly wrong - the app wasn't
                     // able to query or create the collection.
                     // Verify your connection, endpoint, and key.
@@ -245,72 +243,72 @@ public class DocDbDao implements TodoDao {
 	*/
 
     private CosmosContainer getContainerCreateResourcesIfNotExist() {
-    	
-    	try {
-    	
-    		if (cosmosDatabase == null) {
-    			cosmosDatabase = cosmosClient.createDatabaseIfNotExists(DATABASE_ID).getDatabase();
-    		}
-    	
-    	} catch(CosmosClientException e) {
-            // TODO: Something has gone terribly wrong - the app wasn't
-            // able to query or create the collection.
-            // Verify your connection, endpoint, and key.
-    		System.out.println("Something has gone terribly wrong - " +
-                               "the app wasn't able to create the Database.\n");
-    		e.printStackTrace();
-    	}    	
 
-    	try {
-    	
-    		if (cosmosContainer == null) {
-    			CosmosContainerProperties properties = new CosmosContainerProperties(CONTAINER_ID,"/id");
-    			cosmosContainer = cosmosDatabase.createContainerIfNotExists(properties).getContainer();
-    		}
-    	
-    	} catch(CosmosClientException e) {
+        try {
+
+            if (cosmosDatabase == null) {
+                CosmosDatabaseResponse cosmosDatabaseResponse = cosmosClient.createDatabaseIfNotExists(DATABASE_ID);
+                cosmosDatabase = cosmosClient.getDatabase(cosmosDatabaseResponse.getProperties().getId());
+            }
+
+        } catch (CosmosException e) {
             // TODO: Something has gone terribly wrong - the app wasn't
             // able to query or create the collection.
             // Verify your connection, endpoint, and key.
-    		System.out.println("Something has gone terribly wrong - " +
-                    "the app wasn't able to create the Container.\n");
-    		e.printStackTrace();
-    	}    
-    	
-    	return cosmosContainer;
+            System.out.println("Something has gone terribly wrong - " +
+                "the app wasn't able to create the Database.\n");
+            e.printStackTrace();
+        }
+
+        try {
+
+            if (cosmosContainer == null) {
+                CosmosContainerProperties properties = new CosmosContainerProperties(CONTAINER_ID, "/id");
+                CosmosContainerResponse cosmosContainerResponse = cosmosDatabase.createContainerIfNotExists(properties);
+                cosmosContainer = cosmosDatabase.getContainer(cosmosContainerResponse.getProperties().getId());
+            }
+
+        } catch (CosmosException e) {
+            // TODO: Something has gone terribly wrong - the app wasn't
+            // able to query or create the collection.
+            // Verify your connection, endpoint, and key.
+            System.out.println("Something has gone terribly wrong - " +
+                "the app wasn't able to create the Container.\n");
+            e.printStackTrace();
+        }
+
+        return cosmosContainer;
     }
 
     private JsonNode getDocumentById(String id) {
-    	
-        String sql = "SELECT * FROM root r WHERE r.id='" + id + "'";                    
+
+        String sql = "SELECT * FROM root r WHERE r.id='" + id + "'";
         int maxItemCount = 1000;
         int maxDegreeOfParallelism = 1000;
         int maxBufferedItemCount = 100;
 
-        FeedOptions options = new FeedOptions();
-        options.setMaxItemCount(maxItemCount);
+        CosmosQueryRequestOptions options = new CosmosQueryRequestOptions();
         options.setMaxBufferedItemCount(maxBufferedItemCount);
         options.setMaxDegreeOfParallelism(maxDegreeOfParallelism);
-        options.setRequestContinuation(null);
-        options.setPopulateQueryMetrics(false);
+        options.setQueryMetricsEnabled(false);
 
         List<JsonNode> itemList = new ArrayList();
-        
+
+        String continuationToken = null;
         do {
-        
-        	for (FeedResponse<JsonNode> pageResponse: 
-        		getContainerCreateResourcesIfNotExist()
-        			.queryItems(sql, options, JsonNode.class)
-        			.iterableByPage()) {
+            for (FeedResponse<JsonNode> pageResponse :
+                getContainerCreateResourcesIfNotExist()
+                    .queryItems(sql, options, JsonNode.class)
+                    .iterableByPage(continuationToken, maxItemCount)) {
 
-        		options.setRequestContinuation(pageResponse.getContinuationToken());
+                continuationToken = pageResponse.getContinuationToken();
 
-        		for (JsonNode item : pageResponse.getElements()) {
-        			itemList.add(item);
-        		}
-        	}
-        
-        } while(options.getRequestContinuation() != null);
+                for (JsonNode item : pageResponse.getElements()) {
+                    itemList.add(item);
+                }
+            }
+
+        } while (continuationToken != null);
 
         if (itemList.size() > 0) {
             return itemList.get(0);

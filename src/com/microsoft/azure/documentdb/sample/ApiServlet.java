@@ -8,8 +8,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.google.gson.Gson;
 import com.microsoft.azure.documentdb.sample.controller.TodoItemController;
 
@@ -49,8 +47,8 @@ public class ApiServlet extends HttpServlet {
 		String id = request.getParameter(TODO_ITEM_ID);
 		String name = request.getParameter(TODO_ITEM_NAME);
 		String category = request.getParameter(TODO_ITEM_CATEGORY);
-		boolean isComplete = StringUtils.equalsIgnoreCase("true",
-				request.getParameter(TODO_ITEM_COMPLETE)) ? true : false;
+		String itemComplete = request.getParameter(TODO_ITEM_COMPLETE);
+		boolean isComplete = itemComplete!= null && itemComplete.equalsIgnoreCase("true");
 
 		switch (request.getParameter(API_METHOD)) {
 		case CREATE_TODO_ITEM:

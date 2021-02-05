@@ -7,8 +7,6 @@ import java.util.Map;
 
 import lombok.NonNull;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.microsoft.azure.documentdb.sample.model.TodoItem;
 
 public class MockDao implements TodoDao {
@@ -20,7 +18,7 @@ public class MockDao implements TodoDao {
 
     @Override
     public TodoItem createTodoItem(@NonNull TodoItem todoItem) {
-        if (StringUtils.isEmpty(todoItem.getId())) {
+        if (todoItem.getId() == null || todoItem.getId().isEmpty()) {
             todoItem.setId(generateId());
         }
         todoItemMap.put(todoItem.getId(), todoItem);
