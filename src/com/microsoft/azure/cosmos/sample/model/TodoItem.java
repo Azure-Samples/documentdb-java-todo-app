@@ -1,4 +1,4 @@
-package com.microsoft.azure.documentdb.sample.model;
+package com.microsoft.azure.cosmos.sample.model;
 
 //@Data
 //@Builder

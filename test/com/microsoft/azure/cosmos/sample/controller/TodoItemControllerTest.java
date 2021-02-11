@@ -1,4 +1,4 @@
-package com.microsoft.azure.documentdb.sample.controller;
+package com.microsoft.azure.cosmos.sample.controller;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -10,8 +10,8 @@ import java.util.Random;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.microsoft.azure.documentdb.sample.dao.DocDbDao;
-import com.microsoft.azure.documentdb.sample.model.TodoItem;
+import com.microsoft.azure.cosmos.sample.dao.DocDbDao;
+import com.microsoft.azure.cosmos.sample.model.TodoItem;
 
 public class TodoItemControllerTest {
     private static final String anyTodoItemName = "myName";

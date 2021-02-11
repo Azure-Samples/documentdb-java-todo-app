@@ -1,13 +1,13 @@
-package com.microsoft.azure.documentdb.sample.controller;
+package com.microsoft.azure.cosmos.sample.controller;
 
 import java.util.List;
 import java.util.UUID;
 
 import lombok.NonNull;
 
-import com.microsoft.azure.documentdb.sample.dao.TodoDao;
-import com.microsoft.azure.documentdb.sample.dao.TodoDaoFactory;
-import com.microsoft.azure.documentdb.sample.model.TodoItem;
+import com.microsoft.azure.cosmos.sample.dao.TodoDao;
+import com.microsoft.azure.cosmos.sample.dao.TodoDaoFactory;
+import com.microsoft.azure.cosmos.sample.model.TodoItem;
 
 public class TodoItemController {
     public static TodoItemController getInstance() {

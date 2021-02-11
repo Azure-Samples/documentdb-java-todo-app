@@ -1,4 +1,4 @@
-package com.microsoft.azure.documentdb.sample.dao;
+package com.microsoft.azure.cosmos.sample.dao;
 
 public class TodoDaoFactory {
 	private static TodoDao myTodoDao = new DocDbDao();

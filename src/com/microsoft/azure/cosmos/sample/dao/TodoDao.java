@@ -1,8 +1,8 @@
-package com.microsoft.azure.documentdb.sample.dao;
+package com.microsoft.azure.cosmos.sample.dao;
 
 import java.util.List;
 
-import com.microsoft.azure.documentdb.sample.model.TodoItem;
+import com.microsoft.azure.cosmos.sample.model.TodoItem;
 
 public interface TodoDao {
     /**

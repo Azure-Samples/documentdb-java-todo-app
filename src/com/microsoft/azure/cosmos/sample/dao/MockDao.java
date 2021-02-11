@@ -1,4 +1,4 @@
-package com.microsoft.azure.documentdb.sample.dao;
+package com.microsoft.azure.cosmos.sample.dao;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -7,9 +7,7 @@ import java.util.Map;
 
 import lombok.NonNull;
 
-import org.apache.commons.lang3.StringUtils;
-
-import com.microsoft.azure.documentdb.sample.model.TodoItem;
+import com.microsoft.azure.cosmos.sample.model.TodoItem;
 
 public class MockDao implements TodoDao {
     private final Map<String, TodoItem> todoItemMap;
@@ -20,7 +18,7 @@ public class MockDao implements TodoDao {
 
     @Override
     public TodoItem createTodoItem(@NonNull TodoItem todoItem) {
-        if (StringUtils.isEmpty(todoItem.getId())) {
+        if (todoItem.getId() == null || todoItem.getId().isEmpty()) {
             todoItem.setId(generateId());
         }
         todoItemMap.put(todoItem.getId(), todoItem);
