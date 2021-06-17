@@ -18,7 +18,7 @@ For a complete end-to-end walkthrough of creating the application, please visit 
 ![My ToDo List Java application](./media/cosmos-java-application/image1.png)
 
 
-##<a id="Requirements"></a>Requirements
+## <a id="Requirements"></a>Requirements
 Before you begin this application development tutorial, you must have the following:
 
 - An active Azure CosmosDB account. 
@@ -28,7 +28,7 @@ Before you begin this application development tutorial, you must have the follow
 
 If you're installing these tools for the first time, coreservlets.com provides a walk-through of the installation process in the Quick Start section of their [Tutorial: Installing TomCat7 and Using it with Eclipse](http://www.coreservlets.com/Apache-Tomcat-Tutorial/tomcat-7-with-eclipse.html) article. 
 
-##<a id="Running"></a>Running the Code Sample
+## <a id="Running"></a>Running the Code Sample
 
 All the samples in this tutorial are included in the cosmos-java-todoapp project on [GitHub](https://github.com/Azure-Samples/cosmos-java-todoapp). To import the todo project into Eclipse, ensure you have the software and resources listed in the [Requirements](#Requirements) section, then do the following:
 
